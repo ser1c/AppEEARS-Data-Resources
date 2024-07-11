@@ -12,22 +12,26 @@ library(sys)
 library(getPass)
 
 # Specify path to user profile 
-up <- file.path(Sys.getenv("USERPROFILE"))                            # Retrieve user directory (for netrc file)
+up <- file.path(Sys.getenv("/Users/sabin/Library/CloudStorage/OneDrive-UniversityofStrathclyde/github/remittance/AppEEARS-Data-Resources/USERPROFILE"))                            # Retrieve user directory (for netrc file)
 
 # Below, HOME and Userprofile directories are set.  
 
+up <- Sys.getenv("USERPROFILE")
 if (up == "") {
     up <- Sys.getenv("HOME") 
-    Sys.setenv("userprofile" = up)
     if (up == "") {
-        cat('USERPROFILE/HOME directories need to be set up. Please type sys.setenv("HOME" = "YOURDIRECTORY") or  sys.setenv("USERPROFILE" = "YOURDIRECTORY") in your console and type your USERPROFILE/HOME direcory instead of "YOURDIRECTORY". Next, run the code chunk again.')
+        cat('USERPROFILE/HOME directories need to be set up. Please type Sys.setenv("HOME" = "YOURDIRECTORY") or Sys.setenv("USERPROFILE" = "YOURDIRECTORY") in your console and type your USERPROFILE/HOME directory instead of "YOURDIRECTORY". Next, run the code chunk again.')
+        stop("Environment variables not set")
     }
-} else {Sys.setenv("HOME" = up)}        
+    Sys.setenv("USERPROFILE" = up)
+} else {
+    Sys.setenv("HOME" = up)
+}        
 
 netrc_path <- file.path(up, ".netrc", fsep = .Platform$file.sep)    # Path to netrc file
 
 # Create a netrc file if one does not exist already
-if (file.exists(netrc_path) == FALSE || grepl("urs.earthdata.nasa.gov", readLines(netrc_path)) == FALSE) {
+if (!file.exists(netrc_path) || !any(grepl("urs.earthdata.nasa.gov", readLines(netrc_path)))) {
     netrc_conn <- file(netrc_path)
     
     # User will be prompted for NASA Earthdata Login Username and Password below
@@ -35,7 +39,7 @@ if (file.exists(netrc_path) == FALSE || grepl("urs.earthdata.nasa.gov", readLine
                  sprintf("login %s", getPass(msg = "Enter NASA Earthdata Login Username \n (An account can be Created at urs.earthdata.nasa.gov):")),
                  sprintf("password %s", getPass(msg = "Enter NASA Earthdata Login Password:"))), netrc_conn)
     close(netrc_conn)
-}else{
+} else {
     i <- 0 
     for (f in readLines(netrc_path)){
         i <- i + 1
@@ -57,4 +61,3 @@ if (file.exists(netrc_path) == FALSE || grepl("urs.earthdata.nasa.gov", readLine
         }
     }
 }
-
